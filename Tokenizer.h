@@ -10,7 +10,8 @@ namespace sqlite {
 
 	struct Token
 	{
-		std::string token_str;
+		char token_str[128];
+		char bytes;
 		int start;
 		int end;
 		int position;
@@ -23,6 +24,6 @@ namespace sqlite {
 		virtual ~Tokenizer() {}
 		virtual int open(const std::string &input) = 0;
 		virtual int close() = 0;
-		virtual void next(Token &token) = 0;
+		virtual bool next(Token &token) = 0;
 	};
 }

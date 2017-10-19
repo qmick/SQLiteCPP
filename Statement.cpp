@@ -12,6 +12,13 @@ namespace sqlite {
 			throw Exception(db, std::string("cannot prepare ") + sql);
 	}
 
+	Statement::Statement(Statement &&other)
+		:_db(other._db), _stmt(other._stmt), _sql(std::move(other._sql))
+	{
+		other._db = NULL;
+		other._stmt = NULL;
+	}
+
 	Statement::~Statement()
 	{
 		finalize();

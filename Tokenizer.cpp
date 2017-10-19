@@ -7,7 +7,8 @@ namespace sqlite {
 
 	struct InternalTokenizer
 	{
-		Tokenizer *real;
+		sqlite3_tokenizer base; //dummy
+		Tokenizer *real; //real tokenizer used
 	};
 
 	struct InternalCursor
@@ -16,8 +17,10 @@ namespace sqlite {
 		Token token;
 	};
 
+	//Global map stores all added tokenizer
 	std::unordered_map<std::string, std::shared_ptr<Tokenizer>> _tokenizers;
 
+	//CREATE VIRTUAL TABLE XXX USING fts4(..., tokenize=XXX arg0 arg1...) 
 	static int xCreate(int argc, const char *const*argv,
 		sqlite3_tokenizer **ppTokenizer
 	)
@@ -30,7 +33,10 @@ namespace sqlite {
 			return SQLITE_NOMEM;
 
 		tokenizer->real = _tokenizers[argv[0]].get();
-		*ppTokenizer = (sqlite3_tokenizer *)&tokenizer;
+
+		//*ppTokenizer will be passed to xOpen and xDestroy
+		*ppTokenizer = &tokenizer->base;
+
 		return SQLITE_OK;
 	}
 
@@ -47,12 +53,17 @@ namespace sqlite {
 	)
 	{
 		auto tokenizer = (InternalTokenizer *)pTokenizer;
-		tokenizer->real->open(std::string(pInput, nBytes));
+		tokenizer->real->open(std::string(pInput));
 		auto cursor = (InternalCursor *)sqlite3_malloc(sizeof(InternalCursor));
 		if (!cursor)
 			return SQLITE_NOMEM;
 		cursor->tokenizer = tokenizer;
 		cursor->token.position = -1;
+		cursor->token.token_str[0] = '\0';
+
+		//*ppCursor will be passed to xNext and xClose
+		*ppCursor = (sqlite3_tokenizer_cursor *)cursor;
+
 		return SQLITE_OK;
 	}
 
@@ -74,16 +85,17 @@ namespace sqlite {
 	{
 		auto cursor = (InternalCursor *)pCursor;
 		auto tokenizer = cursor->tokenizer;
-		tokenizer->real->next(cursor->token);
-		*ppToken = cursor->token.token_str.c_str();
-		*pnBytes = cursor->token.token_str.size();
+		if (tokenizer->real->next(cursor->token))
+			return SQLITE_DONE;
+		*ppToken = cursor->token.token_str;
+		*pnBytes = cursor->token.bytes;
 		*piStartOffset = cursor->token.start;
 		*piEndOffset = cursor->token.end;
 		*piPosition = cursor->token.position;
-		return SQLITE_OK;
+		return  SQLITE_OK;
 	}
 
-	static const sqlite3_tokenizer_module _module =
+	sqlite3_tokenizer_module _module =
 	{
 		0,
 		xCreate,

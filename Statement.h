@@ -17,6 +17,7 @@ namespace sqlite {
 		enum DataType { INTEGER, FLOAT, TEXT, BLOB, NUL };
 
 		Statement(sqlite3 *db, const std::string &sql);
+		Statement(Statement &&other);
 		~Statement();
 
 		void finalize();
