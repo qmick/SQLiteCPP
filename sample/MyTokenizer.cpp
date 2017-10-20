@@ -7,11 +7,10 @@ const char* const USER_DICT_PATH = "../dict/user.dict.utf8";
 const char* const IDF_PATH = "../dict/idf.utf8";
 const char* const STOP_WORD_PATH = "../dict/stop_words.utf8";
 
+using TokenList = std::vector<cppjieba::Word>;
+
+static cppjieba::QuerySegment querySegment(DICT_PATH, HMM_PATH, USER_DICT_PATH);
 MyTokenizer::MyTokenizer()
-	:_jieba(cppjieba::Jieba(DICT_PATH, HMM_PATH,
-							USER_DICT_PATH,
-							IDF_PATH,
-							STOP_WORD_PATH))
 {
 }
 
@@ -20,34 +19,38 @@ MyTokenizer::~MyTokenizer()
 {
 }
 
-int MyTokenizer::open(const std::string & input)
+int MyTokenizer::open(sqlite::Cursor &cursor)
 {
-	_jieba.CutForSearch(input, _words, true);
+	auto words = new TokenList;
+	querySegment.Cut(cursor.input, *words);
+	cursor.context = (void *)words;
 	return 0;
 }
 
-int MyTokenizer::close()
+int MyTokenizer::close(sqlite::Cursor &cursor)
 {
-	_words.clear();
+	delete (TokenList *)cursor.context;
 	return 0;
 }
 
-bool MyTokenizer::next(sqlite::Token &token)
+bool MyTokenizer::next(sqlite::Cursor &cursor)
 {
+	auto words = (TokenList *)cursor.context;
 	//No token left, done
-	if (token.position == _words.size() - 1)
+	if (cursor.position == words->size() - 1)
 		return true;
 
 	//Number of token returned
-	token.position++;
+	cursor.position++;
 
 	//Token string
-	memcpy(token.token_str, _words[token.position].word.c_str(), _words[token.position].word.size() + 1);
-	token.bytes = (int)_words[token.position].word.size();
+	auto &token = (*words)[cursor.position];
+	memcpy(cursor.token_str, token.word.c_str(), token.word.size() + 1);
+	cursor.bytes = (int)token.word.size();
 
 	//Token offset
-	token.start = _words[token.position].offset;
-	token.end = token.start + token.bytes;
+	cursor.start = token.offset;
+	cursor.end = cursor.start + cursor.bytes;
 
 	return false;
 }

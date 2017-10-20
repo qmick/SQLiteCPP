@@ -8,8 +8,10 @@ struct sqlite3_tokenizer_cursor;
 
 namespace sqlite {
 
-	struct Token
+	struct Cursor
 	{
+		void *context;
+		std::string input;
 		char token_str[128];
 		char bytes;
 		int start;
@@ -22,8 +24,8 @@ namespace sqlite {
 	public:
 		Tokenizer() {}
 		virtual ~Tokenizer() {}
-		virtual int open(const std::string &input) = 0;
-		virtual int close() = 0;
-		virtual bool next(Token &token) = 0;
+		virtual int open(Cursor &cursor) = 0;
+		virtual int close(Cursor &cursor) = 0;
+		virtual bool next(Cursor &cursor) = 0;
 	};
 }

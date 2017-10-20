@@ -15,12 +15,12 @@ public:
 	MyTokenizer();
 	~MyTokenizer() override;
 
-	int open(const std::string & input) override;
-	int close() override;
-	bool next(sqlite::Token &token) override;
+	int open(sqlite::Cursor &cursor) override;
+	int close(sqlite::Cursor &cursor) override;
+	bool next(sqlite::Cursor &cursor) override;
 
 private:
-	std::vector<cppjieba::Word> _words;
-	cppjieba::Jieba _jieba;
+	//std::vector<cppjieba::Word> _words;
+	//cppjieba::Jieba _jieba;
 };
 

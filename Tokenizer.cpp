@@ -14,7 +14,7 @@ namespace sqlite {
 	struct InternalCursor
 	{
 		InternalTokenizer *tokenizer;
-		Token token;
+		Cursor cursor;
 	};
 
 	//Global map stores all added tokenizer
@@ -53,13 +53,16 @@ namespace sqlite {
 	)
 	{
 		auto tokenizer = (InternalTokenizer *)pTokenizer;
-		tokenizer->real->open(std::string(pInput));
-		auto cursor = (InternalCursor *)sqlite3_malloc(sizeof(InternalCursor));
+		auto cursor = new InternalCursor;
 		if (!cursor)
 			return SQLITE_NOMEM;
 		cursor->tokenizer = tokenizer;
-		cursor->token.position = -1;
-		cursor->token.token_str[0] = '\0';
+
+		cursor->cursor.input = pInput;
+		cursor->cursor.position = -1;
+		cursor->cursor.token_str[0] = '\0';
+
+		tokenizer->real->open(cursor->cursor);
 
 		//*ppCursor will be passed to xNext and xClose
 		*ppCursor = (sqlite3_tokenizer_cursor *)cursor;
@@ -70,8 +73,8 @@ namespace sqlite {
 	static int xClose(sqlite3_tokenizer_cursor *pCursor)
 	{
 		auto cursor = (InternalCursor *)pCursor;
-		cursor->tokenizer->real->close();
-		sqlite3_free(cursor);
+		cursor->tokenizer->real->close(cursor->cursor);
+		delete cursor;
 		return SQLITE_OK;
 	}
 
@@ -85,13 +88,13 @@ namespace sqlite {
 	{
 		auto cursor = (InternalCursor *)pCursor;
 		auto tokenizer = cursor->tokenizer;
-		if (tokenizer->real->next(cursor->token))
+		if (tokenizer->real->next(cursor->cursor))
 			return SQLITE_DONE;
-		*ppToken = cursor->token.token_str;
-		*pnBytes = cursor->token.bytes;
-		*piStartOffset = cursor->token.start;
-		*piEndOffset = cursor->token.end;
-		*piPosition = cursor->token.position;
+		*ppToken = cursor->cursor.token_str;
+		*pnBytes = cursor->cursor.bytes;
+		*piStartOffset = cursor->cursor.start;
+		*piEndOffset = cursor->cursor.end;
+		*piPosition = cursor->cursor.position;
 		return  SQLITE_OK;
 	}
 

@@ -27,7 +27,16 @@ namespace sqlite {
 		return Statement(_db, sql);
 	}
 
-	void DB::exec(const std::string &sql, int(*callback)(void *, int, char **, char **), void *relay)
+	bool DB::create_function(const std::string & name, int nArg, 
+		                     void(*xFunc)(sqlite3_context *, int, sqlite3_value **))
+	{
+		sqlite3_create_function(_db, name.c_str(), nArg, 
+			SQLITE_UTF8|SQLITE_DETERMINISTIC, NULL, xFunc, NULL, NULL);
+		return false;
+	}
+
+	void DB::exec(const std::string &sql, 
+		          int(*callback)(void *, int, char **, char **), void *relay)
 	{
 		auto ret = sqlite3_exec(_db, sql.c_str(), callback, relay, NULL);
 		if (ret != SQLITE_OK && ret != SQLITE_ABORT)

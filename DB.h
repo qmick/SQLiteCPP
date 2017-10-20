@@ -7,6 +7,8 @@
 #include <memory>
 
 struct sqlite3;
+struct sqlite3_context;
+struct sqlite3_value;
 
 namespace sqlite {
 	class DB
@@ -27,13 +29,16 @@ namespace sqlite {
 		}
 
 		template <typename...Args>
-		int update(const std::string &sql, Args...args)
+		bool update(const std::string &sql, Args...args)
 		{
 			auto stmt = prepare(sql);
 			if (sizeof...(Args) > 0)
-				stmt.bind_all(args);
+				stmt.bind_all(args...);
 			return stmt.step() == Statement::DONE;
 		}
+
+		bool create_function(const std::string &name, int nArg, 
+			                 void(*xFunc)(sqlite3_context*, int, sqlite3_value**));
 
 		void exec(const std::string &sql, int(*callback)(void*, int, char**, char**), void *relay);
 		bool close();
