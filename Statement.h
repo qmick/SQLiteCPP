@@ -66,7 +66,7 @@ namespace sqlite {
 		sqlite3_stmt *_stmt;
 		const std::string _sql;
 
-		void _bind(int idx) {}
+        void _bind(int) {}
 
 		template <typename T, typename ...Args>
 		void _bind(int idx, T value, Args...args)
@@ -77,7 +77,7 @@ namespace sqlite {
 
 		template <size_t index, typename ...Args>
 		typename std::enable_if<index == sizeof...(Args)>::type
-		_column(std::tuple<Args...> &values) {}
+        _column(std::tuple<Args...> &) {}
 
 		template <size_t index, typename ...Args>
 		typename std::enable_if<(index < sizeof...(Args))>::type

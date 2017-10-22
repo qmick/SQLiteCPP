@@ -20,6 +20,9 @@ namespace sqlite {
 	//Global map stores all added tokenizer
 	std::unordered_map<std::string, std::shared_ptr<Tokenizer>> _tokenizers;
 
+    Tokenizer::Tokenizer() {}
+    Tokenizer::~Tokenizer() {}
+
 	//CREATE VIRTUAL TABLE XXX USING fts4(..., tokenize=XXX arg0 arg1...) 
 	static int xCreate(int argc, const char *const*argv,
 		sqlite3_tokenizer **ppTokenizer
@@ -48,7 +51,7 @@ namespace sqlite {
 
 	static int xOpen(
 		sqlite3_tokenizer *pTokenizer,       /* Tokenizer object */
-		const char *pInput, int nBytes,      /* Input buffer */
+        const char *pInput, int,      /* Input buffer */
 		sqlite3_tokenizer_cursor **ppCursor  /* OUT: Created tokenizer cursor */
 	)
 	{

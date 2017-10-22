@@ -14,7 +14,7 @@ namespace sqlite {
 	class DB
 	{
 	public:
-		DB(const std::string &filename);
+        explicit DB(const std::string &filename);
 		~DB();
 
 		Statement prepare(const std::string &sql);
