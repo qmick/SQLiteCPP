@@ -30,15 +30,17 @@ namespace sqlite {
 		_stmt = NULL;
 	}
 
-	void Statement::bind(int idx, const void *blob, int n, void(*dtor)(void *))
+    void Statement::bind(int idx, const void *blob, int n, DestructorType dtor)
 	{
-		if (sqlite3_bind_blob(_stmt, idx, blob, n, dtor) != SQLITE_OK)
+        auto d = dtor == STATIC ? SQLITE_STATIC : SQLITE_TRANSIENT;
+        if (sqlite3_bind_blob(_stmt, idx, blob, n, d) != SQLITE_OK)
 			throw Exception(_db, "cannot bind");
 	}
 
-	void Statement::bind(int idx, const void *blob, uint64_t n, void(*dtor)(void *))
+    void Statement::bind(int idx, const void *blob, uint64_t n, DestructorType dtor)
 	{
-		if (sqlite3_bind_blob64(_stmt, idx, blob, n, dtor) != SQLITE_OK)
+        auto d = dtor == STATIC ? SQLITE_STATIC : SQLITE_TRANSIENT;
+        if (sqlite3_bind_blob64(_stmt, idx, blob, n, d) != SQLITE_OK)
 			throw Exception(_db, "cannot bind");
 	}
 
@@ -72,15 +74,17 @@ namespace sqlite {
 			throw Exception(_db, "cannot bind");
 	}
 
-	void Statement::bind(int idx, const char *text, int n, void(*dtor)(void *))
+    void Statement::bind(int idx, const char *text, int n, DestructorType dtor)
 	{
-		if (sqlite3_bind_text(_stmt, idx, text, n, dtor) != SQLITE_OK)
+        auto d = dtor == STATIC ? SQLITE_STATIC : SQLITE_TRANSIENT;
+        if (sqlite3_bind_text(_stmt, idx, text, n, d) != SQLITE_OK)
 			throw Exception(_db, "cannot bind");
 	}
 
-	void Statement::bind(int idx, const char *text, uint64_t n, void(*dtor)(void *), unsigned char encoding)
+    void Statement::bind(int idx, const char *text, uint64_t n, DestructorType dtor, unsigned char encoding)
 	{
-		if (sqlite3_bind_text64(_stmt, idx, text, n, dtor, encoding) != SQLITE_OK)
+        auto d = dtor == STATIC ? SQLITE_STATIC : SQLITE_TRANSIENT;
+        if (sqlite3_bind_text64(_stmt, idx, text, n, d, encoding) != SQLITE_OK)
 			throw Exception(_db, "cannot bind");
 	}
 
@@ -90,9 +94,10 @@ namespace sqlite {
 			throw Exception(_db, "cannot bind");
 	}
 
-	void Statement::bind(int idx, void *ptr, const char *type, void(*dtor)(void *))
+    void Statement::bind(int idx, void *ptr, const char *type, DestructorType dtor)
 	{
-		if (sqlite3_bind_pointer(_stmt, idx, ptr, type, dtor) != SQLITE_OK)
+        auto d = dtor == STATIC ? SQLITE_STATIC : SQLITE_TRANSIENT;
+        if (sqlite3_bind_pointer(_stmt, idx, ptr, type, d) != SQLITE_OK)
 			throw Exception(_db, "cannot bind");
 	}
 
@@ -160,8 +165,7 @@ namespace sqlite {
 
 	template<> std::string Statement::column<std::string>(int iCol)
 	{
-		auto len = column_bytes(iCol);
-		return std::string(reinterpret_cast<const char*>(sqlite3_column_text(_stmt, iCol)), len);
+        return std::string((const char*)sqlite3_column_text(_stmt, iCol));
 	}
 
 	template<> const unsigned char* Statement::column<const unsigned char*>(int iCol)

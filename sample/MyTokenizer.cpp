@@ -1,17 +1,21 @@
 #include "MyTokenizer.h"
 #include <cppjieba/Jieba.hpp>
 #include <iostream>
-static const char* const DICT_PATH = "../dict/jieba.dict.utf8";
-static const char* const HMM_PATH = "../dict/hmm_model.utf8";
-static const char* const USER_DICT_PATH = "../dict/user.dict.utf8";
-static const char* const IDF_PATH = "../dict/idf.utf8";
-static const char* const STOP_WORD_PATH = "../dict/stop_words.utf8";
+
+static const char* const DICT_PATH = "./jieba.dict.utf8";
+static const char* const HMM_PATH = "./hmm_model.utf8";
+static const char* const USER_DICT_PATH = "./user.dict.utf8";
+static const char* const IDF_PATH = "./idf.utf8";
+static const char* const STOP_WORD_PATH = "./stop_words.utf8";
 
 using TokenList = std::vector<cppjieba::Word>;
 
-static cppjieba::QuerySegment querySegment(DICT_PATH, HMM_PATH, USER_DICT_PATH);
-MyTokenizer::MyTokenizer()
+MyTokenizer::MyTokenizer(const std::string &dict_path)
 {
+    querySegment = std::unique_ptr<cppjieba::QuerySegment>
+            (new cppjieba::QuerySegment(dict_path + DICT_PATH,
+                                        dict_path + HMM_PATH,
+                                        dict_path + USER_DICT_PATH));
 }
 
 
@@ -22,7 +26,7 @@ MyTokenizer::~MyTokenizer()
 int MyTokenizer::open(sqlite::Cursor &cursor)
 {
 	auto words = new TokenList;
-	querySegment.Cut(cursor.input, *words);
+    querySegment->Cut(cursor.input, *words);
 	cursor.context = (void *)words;
 	return 0;
 }

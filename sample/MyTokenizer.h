@@ -1,18 +1,21 @@
 #pragma once
 
 #include "../Tokenizer.h"
-#include <cppjieba/Jieba.hpp>
 #include <memory>
 #include <vector>
 #include <string>
 
+
+namespace cppjieba {
+    class QuerySegment;
+}
 
 // Custom tokenizer using Jieba Tokenizer
 class MyTokenizer :
 	public sqlite::Tokenizer
 {
 public:
-	MyTokenizer();
+    MyTokenizer(const std::string &dict_path);
 	~MyTokenizer() override;
 
 	int open(sqlite::Cursor &cursor) override;
@@ -20,7 +23,6 @@ public:
 	bool next(sqlite::Cursor &cursor) override;
 
 private:
-	//std::vector<cppjieba::Word> _words;
-	//cppjieba::Jieba _jieba;
+    std::unique_ptr<cppjieba::QuerySegment> querySegment;
 };
 

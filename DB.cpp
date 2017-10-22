@@ -66,7 +66,7 @@ namespace sqlite {
 		auto data = &_module;
 		auto stmt = prepare(sql);
 		stmt.bind(1, name);
-		stmt.bind(2, &data, (int)sizeof(data), SQLITE_STATIC);
+        stmt.bind(2, &data, (int)sizeof(data), Statement::STATIC);
 
 		//Only enable FTS3_TOKENIZER when needed for security purpose
 		sqlite3_db_config(_db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, 1, 0);

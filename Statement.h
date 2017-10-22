@@ -9,12 +9,12 @@ struct sqlite3_stmt;
 struct sqlite3;
 
 namespace sqlite {
-	class DB;
 	class Statement
 	{
 	public:
 		enum State { BUSY, ROW, DONE, MISUSE };
 		enum DataType { INTEGER, FLOAT, TEXT, BLOB, NUL };
+        enum DestructorType { STATIC, TRANSIENT };
 
 		Statement(sqlite3 *db, const std::string &sql);
 		Statement(Statement &&other);
@@ -22,17 +22,17 @@ namespace sqlite {
 
 		void finalize();
 
-		void bind(int idx, const void *blob, int n, void(*dtor)(void*));
-		void bind(int idx, const void *blob, uint64_t n, void(*dtor)(void*));
+        void bind(int idx, const void *blob, int n, DestructorType dtor);
+        void bind(int idx, const void *blob, uint64_t n, DestructorType dtor);
 		void bind(int idx, double value);
 		void bind(int idx, int value);
 		void bind(int idx, int64_t value);
 		void bind(int idx);
 		void bind(int idx, const std::string &text);
-		void bind(int idx, const char *text, int n, void(*dtor)(void*));
-		void bind(int idx, const char *text, uint64_t n, void(*dtor)(void*), unsigned char encoding);
+        void bind(int idx, const char *text, int n, DestructorType dtor);
+        void bind(int idx, const char *text, uint64_t n, DestructorType dtor, unsigned char encoding);
 		void bind(int idx, const sqlite3_value *value);
-		void bind(int idx, void *ptr, const char *type, void(*dtor)(void*));
+        void bind(int idx, void *ptr, const char *type, DestructorType dtor);
 		void bind_zeroblob(int idx, int n);
 		void bind_zeroblob64(int idx, uint64_t n);
 

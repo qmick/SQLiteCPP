@@ -4,7 +4,6 @@
 #include "Statement.h"
 
 namespace sqlite {
-	class Statement;
 	class ResultSet
 	{
 	public:
