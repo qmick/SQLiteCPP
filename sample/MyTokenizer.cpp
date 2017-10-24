@@ -2,11 +2,11 @@
 #include <cppjieba/Jieba.hpp>
 #include <iostream>
 
-static const char* const DICT_PATH = "./jieba.dict.utf8";
-static const char* const HMM_PATH = "./hmm_model.utf8";
-static const char* const USER_DICT_PATH = "./user.dict.utf8";
-static const char* const IDF_PATH = "./idf.utf8";
-static const char* const STOP_WORD_PATH = "./stop_words.utf8";
+static const char* const DICT_PATH = "/jieba.dict.utf8";
+static const char* const HMM_PATH = "/hmm_model.utf8";
+static const char* const USER_DICT_PATH = "/user.dict.utf8";
+static const char* const IDF_PATH = "/idf.utf8";
+static const char* const STOP_WORD_PATH = "/stop_words.utf8";
 
 using TokenList = std::vector<cppjieba::Word>;
 

@@ -1,5 +1,7 @@
 #include "rankfunc.h"
-#include <cassert>
+#include <stdio.h>
+#include <assert.h>
+#include <math.h>
 
 //TF-IDF based ranking algorithm
 void rankfunc(sqlite3_context *pCtx, int nVal, sqlite3_value **apVal)
