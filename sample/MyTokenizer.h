@@ -12,15 +12,15 @@ namespace cppjieba {
 
 // Custom tokenizer using Jieba Tokenizer
 class MyTokenizer :
-	public sqlite::Tokenizer
+    public sqlite::Tokenizer
 {
 public:
     MyTokenizer(const std::string &dict_path);
-	~MyTokenizer() override;
+    ~MyTokenizer() override;
 
-	int open(sqlite::Cursor &cursor) override;
-	int close(sqlite::Cursor &cursor) override;
-	bool next(sqlite::Cursor &cursor) override;
+    int open(sqlite::Cursor &cursor) override;
+    int close(sqlite::Cursor &cursor) override;
+    bool next(sqlite::Cursor &cursor) override;
 
 private:
     std::unique_ptr<cppjieba::QuerySegment> querySegment;
