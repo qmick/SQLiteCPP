@@ -16,11 +16,12 @@ Clone this repo, add all header files into your project is enough.
 //"mytable" has 3 columns:id int, name varchar(20), grade int
 sqlite::DB db("./my.db");
 std::string sql = "SELECT * FROM mytable WHERE grade > ? AND name LIKE ?";
-auto rs = db.query(sql, 88, "Jord%");
-while (rs.next())
+auto stmt = db.query(sql, 88, "Jord%");
+while (stmt.step() == sqlite::Statement::ROW)
 {
-    auto row = rs.get<int, std::string, int>(); 
-    std::cout << row.get<0>() << " " << row.get<1>() << " " << row.get<2>() << std::endl;
+    std::cout << stmt.column_int(0)    << " "
+              << stmt.column_string(1) << " "
+              << stmt.column_int(2)    << std::endl;
 }
 ```
 
@@ -52,9 +53,25 @@ for (auto &i : students)
 db.update("COMMIT;");
 ```
 
-## Full text search
 
-To use full text search, you should add both `Tokenizer.h` and `Tokenizer.cpp` to your project.
+
+
+
+## Advanced Usage: Full text search
+
+To use full text search:
+
+1. Add both `Tokenizer.h` and `Tokenizer.cpp` to your project.
+2. Define `USE_FTS` macro.
+
+(Optinal) To use cppjieba tokenizer, you should clone cppJieba tokenizer repo and add following path to your include path:
+
+```
+PATH_TO_JIEBA_REPO/cppjieba/include
+PATH_TO_JIEBA_REPO/cppjieba/deps
+```
+
+This is an example:
 
 ```c++
 sqlite::DB db("./my.db");
@@ -72,24 +89,17 @@ db.create_function("rank", -1, rankfunc);
 std::string sql_create = "CREATE VIRTUAL TABLE IF NOT EXISTS my_index USING fts4(id, name, grade, tokenize=jieba jieba)";
 std::string sql_query = "SELECT id,name,grade,rank,snippet(my_index, \"<font color=red>\", \"</font>\", \"...\", -1, 11) AS snippet FROM my_index JOIN (SELECT docid, rank(matchinfo(my_index,'pcxnl'),1,1,1) AS rank FROM my_index WHERE my_index MATCH ? ORDER BY rank DESC ) AS ranktable USING(docid) WHERE my_index MATCH ? ORDER BY ranktable.rank DESC";
 
-auto rs = db.query(sql_query, "我", "我"); //Keyword needs to be repeat twice due to the form of query sql
-while (rs.next())
+auto stmt = db.query(sql_query, "我", "我"); //Keyword needs to be repeat twice due to the form of query sql
+while (stmt.step() == sqlite::Statement::ROW)
 {
-    auto row = rs.get<int, std::string, int, double, std::string>(); 
-    std::cout << row.get<0>() << " " //id
-              << row.get<1>() << " " //name
-              << row.get<2>() << " " //grade
-              << row.get<3>() << " " //rank, rank score of this row, higher is better
-              << row.get<4>() << " " //snippet, short html string that contains keyword
+    std::cout << stmt.column_int(0)    << " " //id
+              << stmt.column_string(1) << " " //name
+              << stmt.column_int(2)    << " " //grade
+              << stmt.column_double(3) << " " //rank, rank score of this row, higher is better
+              << stmt.column_string(4) << " " //snippet, short html string that contains keyword
               << std::endl;
 }
 ```
 
-
-To use cppjieba tokenizer, you should clone cppJieba tokenizer repo and add following path to your include path:
-
-```
-PATH_TO_JIEBA_REPO/cppjieba/include
-PATH_TO_JIEBA_REPO/cppjieba/deps
-```
+The SQL string is quite complex, for more details please refer to SQLite document [Appendix A: Search Application Tips](https://www.sqlite.org/fts3.html#appendix_a)
 

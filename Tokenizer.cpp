@@ -1,7 +1,7 @@
-#include "Tokenizer.h"
 #include "fts3_tokenizer.h"
-#include <unordered_map>
+#include "Tokenizer.h"
 #include <memory>
+#include <unordered_map>
 
 namespace sqlite {
 

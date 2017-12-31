@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TOKENIZER_H
+#define TOKENIZER_H
 
 #include <string>
 
@@ -29,3 +30,5 @@ namespace sqlite {
         virtual bool next(Cursor &cursor) = 0;
     };
 }
+
+#endif // TOKENIZER_H
