@@ -183,6 +183,11 @@ namespace sqlite {
             return sqlite3_column_text(_stmt, iCol);
         }
 
+        std::string column_string(int iCol)
+        {
+            return std::string(reinterpret_cast<const char*>(sqlite3_column_text(_stmt, iCol)));
+        }
+
         const void *column_text16(int iCol)
         {
             return sqlite3_column_text16(_stmt, iCol);
